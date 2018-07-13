@@ -1,5 +1,5 @@
 # redmine-tte-extension
-Redmine Today’s Time Entries Extension Source Code (Chrome & Firefox)
+Redmine Today’s Time Entries Extension (Chrome & Firefox)
 
 Download for Chrome: https://chrome.google.com/webstore/detail/redmine-todays-time-entri/ibgldhkfigkckofcdgagbgjgedcgbfcl
 
