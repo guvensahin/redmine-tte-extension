@@ -1,5 +1,5 @@
 # redmine-tte-extension
-Redmine Today’s Time Entries Extension (Chrome & Firefox)
+Redmine Today’s Time Entries Extension (Chrome & Firefox)  
 About extension (Turkish): http://guvensahin.com/chrome-icin-yazdigim-redmine-eklentisi-redmine-todays-time-entries
 
 # Download for Chrome
