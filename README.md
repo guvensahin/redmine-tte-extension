@@ -1,5 +1,5 @@
 # Redmine Today’s Time Entries Extension
-- One click access today's time entries for Redmine.
+- One click access today's time entries for Redmine (redmine.org)
 - Works on Chrome & Firefox.
 - About extension (Turkish): http://guvensahin.com/chrome-icin-yazdigim-redmine-eklentisi-redmine-todays-time-entries
 
