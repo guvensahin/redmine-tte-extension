@@ -1,4 +1,4 @@
-// Güven Şahin - guvensahin.com
+// GÃ¼ven Åahin - guvensahin.com
 
 var redmineHelper = {
 

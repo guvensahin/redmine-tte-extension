@@ -49,7 +49,7 @@ function saveOptions() {
         },
         error: function (xhr) {
             status.textContent = 'Some fields are not valid.';
-            console.log('Redmine Daily Time Entries Error. Request Status: ' + xhr.status + ' Status Text: ' + xhr.statusText + ' ' + xhr.responseText);
+            console.log('Something went wrong. Request Status: ' + xhr.status + ' Status Text: ' + xhr.statusText + ' ' + xhr.responseText);
         }
     });
 }
@@ -57,9 +57,24 @@ function saveOptions() {
 function restoreOptions() {
     // Use default value 
     chrome.storage.sync.get(null, function (items) {
-        document.getElementById('redmineUrl').value = items.redmineUrl;
-        document.getElementById('redmineApiKey').value = items.redmineApiKey;
-        document.getElementById('redmineUsername').value = items.redmineUsername;
+
+        if (items)
+        {
+            if (items.redmineUrl)
+            {
+                document.getElementById('redmineUrl').value = items.redmineUrl;
+            }
+
+            if (items.redmineApiKey)
+            {
+                document.getElementById('redmineApiKey').value = items.redmineApiKey;
+            }
+
+            if (items.redmineUsername)
+            {
+                document.getElementById('redmineUsername').value = items.redmineUsername;
+            }
+        }
     });
 }
 
