@@ -14,34 +14,41 @@
 
 <body>
 
-    <div class="header-info">
+    <div class="container">
+        <div class="row">
 
-        <div class="pull-left">
-            <a class="btn btn-primary btn-xs" role="button" aria-disabled="true">
-                Today total <span class="badge badge-light"><span id="sumHour"></span></span>
-            </a>
-        </div>
+            <div class="header-info">
+                <div class="pull-left">
+                    <a class="btn btn-primary btn-xs" role="button" aria-disabled="true">
+                        Today total <span class="badge badge-light"><span id="sumHour"></span></span>
+                    </a>
+                </div>
 
-        <div class="pull-right" id="createTimeEntry">
-            <a target="blank" href="#" class="btn btn-success btn-xs" role="button" aria-disabled="true">
-                <span class="glyphicon glyphicon-plus"></span> Time entry
-            </a>
+                <div class="pull-right" id="createTimeEntry">
+                    <a target="blank" href="#" class="btn btn-success btn-xs" role="button" aria-disabled="true">
+                        <span class="glyphicon glyphicon-plus"></span> Time entry
+                    </a>
+                </div>
+            </div>
+
+
+
+
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Project</th>
+                        <th>Comment</th>
+                        <th>Hours</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
         </div>
     </div>
 
-
-
-
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th>Project</th>
-                <th>Comment</th>
-                <th>Hours</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+    
 
     <!-- Scripts -->
     <script src="../js/jquery-3.6.0.min.js"></script>
