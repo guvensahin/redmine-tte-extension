@@ -1,16 +1,16 @@
 // Güven Şahin - guvensahin.com
-
-function saveOptions() {
-    var status = document.getElementById('status');
-
-    var redmineUrl = document.getElementById('redmineUrl').value;
-    var redmineApiKey = document.getElementById('redmineApiKey').value;
+function saveOptions()
+{
+    var redmineUrl      = document.getElementById('redmineUrl').value;
+    var redmineApiKey   = document.getElementById('redmineApiKey').value;
     var redmineUsername = document.getElementById('redmineUsername').value;
+    var workingHour     = document.getElementById('workingHour').value;
 
     if (!redmineUrl
         || !redmineApiKey
-        || !redmineUsername) {
-        status.textContent = 'Please fill all fields.';
+        || !redmineUsername)
+    {
+        updateSaveStatus('Please fill all required fields.');
         return;
     }
 
@@ -25,12 +25,11 @@ function saveOptions() {
             if (!data.users[0]
                 || data.users[0].login != redmineUsername)
             {
-                status.textContent = 'Username not valid.';
+                updateSaveStatus('Redmine Username not valid.');
                 return;
             };
 
             var userId = data.users[0].id;
-
             console.log(userId);
 
             // chrome'a kaydedilir
@@ -38,26 +37,40 @@ function saveOptions() {
                 redmineUrl: redmineUrl,
                 redmineApiKey: redmineApiKey,
                 redmineUsername: redmineUsername,
-                redmineUserId: userId
+                redmineUserId: userId,
+                workingHour: workingHour
             }, function () {
-                // Update status to let user know options were saved.
-                status.textContent = 'Options saved.';
-                setTimeout(function () {
-                    status.textContent = '';
-                }, 750);
+                updateSaveStatus('Options saved.', true);
             });
         },
         error: function (xhr) {
-            status.textContent = 'Some fields are not valid.';
+            updateSaveStatus('Some fields are not valid.');
             console.log('Something went wrong. Request Status: ' + xhr.status + ' Status Text: ' + xhr.statusText + ' ' + xhr.responseText);
         }
     });
 }
 
-function restoreOptions() {
-    // Use default value 
-    chrome.storage.sync.get(null, function (items) {
+function updateSaveStatus(message, isSuccess = false)
+{
+    var status = document.getElementById('status');
 
+    var cssClass = isSuccess ? 'alert-success' : 'alert-warning';
+    message = '<div id="status" class="alert ' + cssClass +'" role="alert">' + message + '</div>';
+
+    status.innerHTML = message;
+
+    if (isSuccess)
+    {
+        setTimeout(function () {
+            status.innerHTML = '';
+        }, 750);
+    }
+}
+
+function restoreOptions()
+{
+    chrome.storage.sync.get(null, function (items)
+    {
         if (items)
         {
             if (items.redmineUrl)
@@ -73,6 +86,11 @@ function restoreOptions() {
             if (items.redmineUsername)
             {
                 document.getElementById('redmineUsername').value = items.redmineUsername;
+            }
+
+            if (items.workingHour)
+            {
+                document.getElementById('workingHour').value = items.workingHour;
             }
         }
     });
