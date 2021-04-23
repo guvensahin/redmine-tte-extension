@@ -1,82 +1,207 @@
 // Güven Şahin - guvensahin.com
+Date.prototype.isToday = function () {
+    const date = new Date();
+    
+    return this.getDate() === date.getDate() &&
+        this.getMonth() === date.getMonth() &&
+        this.getFullYear() === date.getFullYear();
+};
 
-var redmineHelper = {
+Date.prototype.isYesterday = function () {
+    var date = new Date();
+    date.setDate(date.getDate() - 1);
 
-    refreshTimeEntriesForBadge(url, apiKey, userId)
+    return this.getDate() === date.getDate() &&
+        this.getMonth() === date.getMonth() &&
+        this.getFullYear() === date.getFullYear();
+};
+
+function getWeekNumber(d)
+{
+    // Copy date so don't modify original
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    // Set to nearest Thursday: current date + 4 - current day number
+    // Make Sunday's day number 7
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    // Get first day of year
+    var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    // Calculate full weeks to nearest Thursday
+    var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    // Return array of year and week number
+    return weekNo;
+}
+
+function generateApiUrl(storageObj)
+{
+    var ret = null;
+
+    if (storageObj.redmineUrl
+        && storageObj.redmineApiKey)
     {
-        var date = this.getFormattedDate(new Date());
-
-        $.ajax({
-            url: url + '/time_entries.json?key=' + apiKey + '&user_id=' + userId + '&spent_on=' + date,
-            type: 'get',
-            dataType: 'json',
-            success: function (data) {
-
-                var total = 0.0;
-
-                $.each(data.time_entries, function (index, item) {
-                    total += parseFloat(item.hours);
-                });
-
-                chrome.browserAction.setBadgeText({ text: total.toString() });
-            }
-        });
-    },
-
-    getTimeEntriesForPopup(url, apiKey, userId)
-    {
-        var date = this.getFormattedDate(new Date());
-
-        $.ajax({
-            url: url + '/time_entries.json?key=' + apiKey + '&user_id=' + userId + '&spent_on=' + date,
-            type: 'get',
-            dataType: 'json',
-            success: function (data) {
-
-                var total = 0.0;
-
-                $.each(data.time_entries, function (index, item) {
-                    var editUrl = url + "/time_entries/" + item.id + "/edit";
-                    var projectUrl = url + "/projects/" + item.project.id;
-
-                    var trText = "<tr>";
-                    trText += "<td><a target='blank' href='" + projectUrl + "'>" + item.project.name + "</td>";
-                    trText += "<td>" + item.comments + "</td>";
-                    trText += "<td>";
-                    trText += "<strong>" + item.hours + "</strong><br>";
-                    trText += "<small><a class='editUrl' target='blank' href='" + editUrl + "'>Edit</a></small>"
-                    trText += "</td>";
-                    trText += "</tr>";
-
-                    $('table').find('tbody').append(trText);
-
-                    total += item.hours;
-                });
-
-                // add total hour
-                document.getElementById('sumHour').textContent = total.toString();
-
-                // create time entry url
-                $('#createTimeEntry a').attr('href', url + '/time_entries/new');
-            }
-        });
-    },
-
-    getFormattedDate(_date) {
-        var ret;
-
-        var dd = _date.getDate();
-        var mm = _date.getMonth() + 1; //January is 0!
-        var yyyy = _date.getFullYear();
-
-        if (dd < 10) {
-            dd = '0' + dd;
-        }
-        if (mm < 10) {
-            mm = '0' + mm;
-        }
-        var ret = yyyy + '-' + mm + '-' + dd;
-
-        return ret;
+        ret = storageObj.redmineUrl + '/time_entries.json?key=' + storageObj.redmineApiKey + '&user_id=me&limit=100&spent_on=m';
     }
+
+    return ret;
+};
+
+
+function handleData(data)
+{
+    // handle data
+    var sumOfToday = 0.0;
+    var sumOfYesterday = 0.0;
+    var sumOfWeek = 0.0;
+    var sumOfMonth = 0.0;
+    var arrTodayEntries = [];
+
+    const currentWeek = getWeekNumber(new Date());
+
+    $.each(data.time_entries, function (index, item)
+    {
+        var itemDateObj = new Date(Date.parse(item.spent_on));
+
+        // today
+        if (itemDateObj.isToday())
+        {
+            sumOfToday += item.hours;
+            arrTodayEntries.push(item);
+        }
+        // yesterday
+        else if (itemDateObj.isYesterday())
+        {
+            sumOfYesterday += item.hours;
+        }
+
+        // this week
+        if (currentWeek == getWeekNumber(itemDateObj))
+        {
+            sumOfWeek += item.hours;
+        }
+
+        // this month
+        sumOfMonth += item.hours;
+    });
+
+    return {
+        sumOfToday: sumOfToday,
+        sumOfYesterday: sumOfYesterday,
+        sumOfWeek: sumOfWeek,
+        sumOfMonth: sumOfMonth,
+        todayEntries: arrTodayEntries
+    };
+}
+
+function updateTotalsFromStorage(storageObj)
+{
+    document.getElementById('sumOfToday').innerHTML     = '<a href="' + storageObj.redmineUrl + '/time_entries?user_id=me&spent_on=t" target="blank">' + storageObj.sumOfToday.toString() + ' Hours</a>';
+    document.getElementById('sumOfYesterday').innerHTML = '<a href="' + storageObj.redmineUrl + '/time_entries?user_id=me&spent_on=ld" target="blank">' + storageObj.sumOfYesterday.toString() + ' Hours</a>';
+    document.getElementById('sumOfWeek').innerHTML      = '<a href="' + storageObj.redmineUrl + '/time_entries?user_id=me&spent_on=w" target="blank">' + storageObj.sumOfWeek.toString() + ' Hours</a>';
+    document.getElementById('sumOfMonth').innerHTML     = '<a href="' + storageObj.redmineUrl + '/time_entries?user_id=me&spent_on=m" target="blank">' + storageObj.sumOfMonth.toString() + ' Hours</a>';
+
+    if (storageObj.workingHour
+        && storageObj.workingHour > 0)
+    {
+        document.getElementById('personDayWeek').innerHTML = (storageObj.sumOfWeek / storageObj.workingHour).toFixed(2).toString() + ' <abbr title="Person-Day based on your working hour">P/D</abbr>';
+        document.getElementById('personDayMonth').innerHTML = (storageObj.sumOfMonth / storageObj.workingHour).toFixed(2).toString() + ' <abbr title="Person-Day based on your working hour">P/D</abbr>';
+    }
+}
+
+
+function refreshContent()
+{
+    chrome.storage.sync.get(null, function (storageObj) {
+
+        var apiUrl = generateApiUrl(storageObj);
+        if (!apiUrl) {
+            return;
+        }
+            
+        $.ajax({
+            url: apiUrl,
+            type: 'get',
+            dataType: 'json',
+            success: function (data) {
+
+                var handler = handleData(data);
+
+                // save data
+                chrome.storage.sync.set({ 
+                    sumOfToday      : handler.sumOfToday,
+                    sumOfYesterday  : handler.sumOfYesterday,
+                    sumOfWeek       : handler.sumOfWeek,
+                    sumOfMonth      : handler.sumOfMonth,
+                });
+
+                // refresh badge
+                chrome.browserAction.setBadgeText({ text: handler.sumOfToday.toString() });
+            }
+        });
+    });
+};
+
+
+function refreshPopup()
+{
+    chrome.storage.sync.get(null, function (storageObj) {
+
+        // first show saved totals to user
+        updateTotalsFromStorage(storageObj);
+
+        
+        // then check updated data silently by async call
+        var apiUrl = generateApiUrl(storageObj);
+        if (!apiUrl) {
+            return;
+        }
+            
+        $.ajax({
+            url: apiUrl,
+            type: 'get',
+            dataType: 'json',
+            success: function (data) {
+
+                var handler = handleData(data); 
+
+                // save data
+                chrome.storage.sync.set({ 
+                    sumOfToday      : handler.sumOfToday,
+                    sumOfYesterday  : handler.sumOfYesterday,
+                    sumOfWeek       : handler.sumOfWeek,
+                    sumOfMonth      : handler.sumOfMonth,
+                });
+
+                // refresh badge
+                chrome.browserAction.setBadgeText({ text: handler.sumOfToday.toString() });
+
+
+
+                // update totals again with the new values
+                updateTotalsFromStorage(storageObj);
+
+                // show today's time entries
+                if (handler.todayEntries
+                    && handler.todayEntries.length > 0)
+                {
+                    var cardGroup = $('.card-group');
+
+                    handler.todayEntries.forEach(function (item) {
+                        
+                        var urlEdit = storageObj.redmineUrl + "/time_entries/" + item.id + "/edit";
+                        var urlProject = storageObj.redmineUrl + "/projects/" + item.project.id;
+            
+                        var content = `
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p class="card-text">${item.comments}</p>
+                                        <a href="${urlEdit}" class="card-link" target="blank">${item.hours} Hours</a>
+                                        <a href="${urlProject}" class="card-link" target="blank">${item.project.name}</a>
+                                    </div>
+                                </div>`;
+
+                        cardGroup.append(content);
+                    }); 
+                }
+            }
+        });
+    });
 }

@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Redmine Companion",
   "description": "Redmine Companion",
-  "version": "1.1",
+  "version": "2.0",
   "author": "Güven Şahin",
   "homepage_url": "https://guvensahin.com",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhtwjUnmFVe5e+3ks+4BOD0+SJh22Z041bGE++pf1CFgyY6t12JGdH5/osKeBhjBlgnbpIubV1PCkfO1jYAw7Ma2b6UjmZ7bIbfI5Oz9K8wM5gbdXa+Nc8gWNwM5nEtnKvsN2uVDHhEpaU99M/MyjKMsThlC0fvqdK9V3i97tzCbut5Xt1j1uXnQjhOaLjIgvKCxLK298Z79KvlbdG7Ggyr8ylD7SfXxpZ6qU/V/YdI+/wkht3Xnvz6va9ZY2E4ER/IDqio/xhpfUp6UdCqsbrgYd07c7CaDaGcgBD8OOq+T7uM6j4SCmzcAlVcUfljKn/MGVZjNjGkNeMD9eWY6FzQIDAQAB",
@@ -13,7 +13,6 @@
   },
 
   "permissions": [
-    "contextMenus",
     "http://*/*",
     "https://*/*",
     "storage"

@@ -15,36 +15,33 @@
 <body>
 
     <div class="container">
-        <div class="row">
 
-            <div class="header-info">
-                <div class="pull-left">
-                    <a class="btn btn-primary btn-xs" role="button" aria-disabled="true">
-                        Today total <span class="badge badge-light"><span id="sumHour"></span></span>
-                    </a>
-                </div>
-
-                <div class="pull-right" id="createTimeEntry">
-                    <a target="blank" href="#" class="btn btn-success btn-xs" role="button" aria-disabled="true">
-                        <span class="glyphicon glyphicon-plus"></span> Time entry
-                    </a>
-                </div>
+        <div class="row py-3 text-center">
+            <div class="col">
+                <small class="">Today</small>
+                <h5 id="sumOfToday"></h5>
             </div>
+            <div class="col">
+                <small class="">Yesterday</small>
+                <h5 id="sumOfYesterday"></h5>
+            </div>
+            <div class="col">
+                <small class="">This Week</small>
+                <h5 id="sumOfWeek"></h5>
+                <small id="personDayWeek"></small>
+            </div>
+            <div class="col">
+                <small class="">This Month</small>
+                <h5 id="sumOfMonth"></h5>
+                <small id="personDayMonth"></small>
+            </div>
+        </div>
 
 
+        <div class="row">
+            <p class="lead text-center">Time Spent Today</p>
 
-
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Project</th>
-                        <th>Comment</th>
-                        <th>Hours</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-
+            <div class="card-group"></div>
         </div>
     </div>
 
