@@ -5,6 +5,5 @@ importScripts('/js/utils.js');
 chrome.alarms.create({ periodInMinutes: 15, when: Date.now() });
 
 chrome.alarms.onAlarm.addListener(() => {
-  console.log('alarm fired.');
   refreshContent();
 });

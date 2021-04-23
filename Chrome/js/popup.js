@@ -1,52 +1,70 @@
 // Güven Şahin - guvensahin.com
-function updateTotalsFromStorage(storageObj)
+
+function updateTotalsFromStorage(options, totals)
 {
-    if (!storageObj) {
+    if (!options || !totals) {
         return;
     }
 
-    if (storageObj.sumOfToday) {
-        document.getElementById('sumOfToday').innerHTML     = '<a href="' + storageObj.redmineUrl + '/time_entries?user_id=me&spent_on=t" target="blank">' + storageObj.sumOfToday.toString() + ' Hours</a>';
+    if (totals.sumOfToday == 0 || totals.sumOfToday) {
+        document.getElementById('sumOfToday').innerHTML = '<a href="' + options.url + '/time_entries?user_id=me&spent_on=t" target="blank">' + totals.sumOfToday.toString() + 'h';
     }
 
-    if (storageObj.sumOfYesterday) {
-        document.getElementById('sumOfYesterday').innerHTML = '<a href="' + storageObj.redmineUrl + '/time_entries?user_id=me&spent_on=ld" target="blank">' + storageObj.sumOfYesterday.toString() + ' Hours</a>';
+    if (totals.sumOfYesterday == 0 || totals.sumOfYesterday) {
+        document.getElementById('sumOfYesterday').innerHTML = '<a href="' + options.url + '/time_entries?user_id=me&spent_on=ld" target="blank">' + totals.sumOfYesterday.toString() + 'h';
     }
 
-    if (storageObj.sumOfWeek) {
-        document.getElementById('sumOfWeek').innerHTML      = '<a href="' + storageObj.redmineUrl + '/time_entries?user_id=me&spent_on=w" target="blank">' + storageObj.sumOfWeek.toString() + ' Hours</a>';
+    if (totals.sumOfWeek == 0 || totals.sumOfWeek) {
+        document.getElementById('sumOfWeek').innerHTML = '<a href="' + options.url + '/time_entries?user_id=me&spent_on=w" target="blank">' + totals.sumOfWeek.toString() + 'h';
 
-        if (storageObj.workingHour && storageObj.workingHour > 0) {
-            document.getElementById('personDayWeek').innerHTML = (storageObj.sumOfWeek / storageObj.workingHour).toFixed(2).toString() + ' <abbr title="Person-Day based on your working hour">P/D</abbr>';
+        if (options.workingHours && options.workingHours > 0) {
+            document.getElementById('personDayWeek').innerHTML = (totals.sumOfWeek / options.workingHours).toFixed(2).toString();
         }
     }
 
-    if (storageObj.sumOfMonth) {
-        document.getElementById('sumOfMonth').innerHTML     = '<a href="' + storageObj.redmineUrl + '/time_entries?user_id=me&spent_on=m" target="blank">' + storageObj.sumOfMonth.toString() + ' Hours</a>';
+    if (totals.sumOfMonth == 0 || totals.sumOfMonth) {
+        document.getElementById('sumOfMonth').innerHTML = '<a href="' + options.url + '/time_entries?user_id=me&spent_on=m" target="blank">' + totals.sumOfMonth.toString() + 'h';
 
-        if (storageObj.workingHour && storageObj.workingHour > 0) {
-            document.getElementById('personDayMonth').innerHTML = (storageObj.sumOfMonth / storageObj.workingHour).toFixed(2).toString() + ' <abbr title="Person-Day based on your working hour">P/D</abbr>';
+        if (options.workingHours && options.workingHours > 0) {
+            document.getElementById('personDayMonth').innerHTML = (totals.sumOfMonth / options.workingHours).toFixed(2).toString();
         }
     }
 }
 
+function handleError(message)
+{
+    document.querySelector('#spinner').classList.add('d-none');
+    document.querySelector('#section-content').classList.remove('d-none');
+    document.querySelector('.list-group').classList.add('d-none');
+    
+    var elem = document.querySelector('#alert-error');
+    elem.classList.remove('d-none');
+    elem.innerHTML = message;
+}
 
 chrome.storage.sync.get(null, function (storageObj) {
 
-    // first show saved totals to user
-    updateTotalsFromStorage(storageObj);
-
-    
-    // then check updated data silently by async call
-    var apiUrl = generateApiUrl(storageObj);
-    if (!apiUrl) {
+    if (!storageObj.options) {
+        document.querySelector('#section-no-options').classList.remove('d-none');
+        document.querySelector('#section-top').classList.add('d-none');
+        document.querySelector('#spinner').classList.add('d-none');
         return;
     }
 
-    fetch(apiUrl)
+    // first show saved totals to user
+    if (storageObj.totals) {
+        updateTotalsFromStorage(storageObj.options, storageObj.totals);
+    }
+    
+    // check updated data silently by async call
+    fetch(generateApiUrl(storageObj.options))
     .then(function(response) {
+        
         if (response.status !== 200) {
-            console.log('Looks like there was a problem. Status Code: ' + response.status);
+            
+            var message = 'Cannot connect redmine portal. Status Code: ' + response.status; 
+            console.log(message);
+            handleError(message);
             return;
         }
         
@@ -55,44 +73,49 @@ chrome.storage.sync.get(null, function (storageObj) {
             var handler = handleData(data);
 
             // save data
-            chrome.storage.sync.set({ 
-                sumOfToday      : handler.sumOfToday,
-                sumOfYesterday  : handler.sumOfYesterday,
-                sumOfWeek       : handler.sumOfWeek,
-                sumOfMonth      : handler.sumOfMonth,
-            });
+            chrome.storage.sync.set({ totals: handler.totals });
 
             // refresh badge
-            chrome.action.setBadgeText({ text: handler.sumOfToday.toString() });
+            chrome.action.setBadgeText({ text: handler.totals.sumOfToday.toString() });
 
 
-            // update totals again with the new values
-            updateTotalsFromStorage(storageObj);
+            // update totals with the new values
+            updateTotalsFromStorage(storageObj.options, handler.totals);
 
-            // show today's time entries
+            // show time entry list
             if (handler.todayEntries
                 && handler.todayEntries.length > 0)
             {
-                var elCardGroup = document.querySelector('.card-group');
+                var elemList = document.querySelector('.list-group');
 
                 handler.todayEntries.forEach(function(item) {
                     
-                    var urlEdit = storageObj.redmineUrl + "/time_entries/" + item.id + "/edit";
-                    var urlProject = storageObj.redmineUrl + "/projects/" + item.project.id;
+                    var urlEdit = storageObj.options.url + "/time_entries/" + item.id + "/edit";
         
-                    elCardGroup.innerHTML += `
-                            <div class="card">
-                                <div class="card-body">
-                                    <p class="card-text">${item.comments}</p>
-                                    <a href="${urlEdit}" class="card-link" target="blank">${item.hours} Hours</a>
-                                    <a href="${urlProject}" class="card-link" target="blank">${item.project.name}</a>
+                    elemList.innerHTML += `
+                            <a href="${urlEdit}" target="blank" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <small class="text-muted">${item.project.name}</small>
+                                    <small class="text-muted">${item.hours} Hours</small>
                                 </div>
-                            </div>`;
+                                <p class="mb-1">${item.comments}</p>
+                            </a>`;
                 });
             }
+            else
+            {
+                document.querySelector('.list-group').classList.add('d-none');
+                document.querySelector('#alert-no-entry').classList.remove('d-none');
+            }
+            
+
+            // delete spinner and show content
+            document.querySelector('#spinner').classList.add('d-none');
+            document.querySelector('#section-content').classList.remove('d-none');
         });
     })
     .catch(function(err) {
-        console.log('Fetch Error :-S', err);
+        console.log('Fetch error', err);
+        handleError('Something went wrong! Please check the values you entered in the options.');
     });
 });

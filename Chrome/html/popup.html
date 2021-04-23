@@ -16,33 +16,65 @@
 
     <div class="container">
 
-        <div class="row py-3 text-center">
+        <!-- no options message -->
+        <div class="row d-none mt-3" id="section-no-options">
             <div class="col">
-                <small class="">Today</small>
-                <h5 id="sumOfToday"></h5>
+                <div class="alert alert-primary text-center" role="alert">
+                    Please fill in the required fields in the extension options.
+                </div>
+            </div>
+        </div>
+
+        <!-- totals -->
+        <div class="row text-center pt-3 pb-3" id="section-top">
+            <div class="col">
+                <small>Today</small>
+                <h3 id="sumOfToday"></h3>
             </div>
             <div class="col">
-                <small class="">Yesterday</small>
-                <h5 id="sumOfYesterday"></h5>
+                <small>Yesterday</small>
+                <h3 id="sumOfYesterday"></h3>
             </div>
             <div class="col">
-                <small class="">This Week</small>
-                <h5 id="sumOfWeek"></h5>
-                <small id="personDayWeek"></small>
+                <small>This Week</small>
+                <h3 id="sumOfWeek"></h3>
+                <abbr title="Person-Day based on your working hours"><small id="personDayWeek"></small></abbr>
             </div>
             <div class="col">
-                <small class="">This Month</small>
-                <h5 id="sumOfMonth"></h5>
-                <small id="personDayMonth"></small>
+                <small>This Month</small>
+                <h3 id="sumOfMonth"></h3>
+                <abbr title="Person-Day based on your working hours"><small id="personDayMonth"></small></abbr>
+            </div>
+        </div>
+        
+        <!-- spinner -->
+        <div class="row mt-5 mb-5 text-center" id="spinner">
+            <div class="col">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- content -->
+        <div class="row mb-3 d-none" id="section-content">
+            <div class="col">
+                <div class="card text-center mt-2">
+                    <div class="card-header">Time Entries for Today</div>
+                </div>
+                <div class="list-group mt-2"></div>
+
+                <div class="alert alert-warning mt-2 mb-0 text-center d-none" role="alert" id="alert-no-entry">
+                    No data to display.
+                </div>
+
+                <div class="alert alert-danger mt-2 mb-0 text-center d-none" role="alert" id="alert-error">
+                </div>
             </div>
         </div>
 
 
-        <div class="row">
-            <p class="lead text-center">Time Spent Today</p>
 
-            <div class="card-group"></div>
-        </div>
     </div>
 
     

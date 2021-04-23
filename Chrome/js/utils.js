@@ -31,14 +31,15 @@ function getWeekNumber(d)
     return weekNo;
 }
 
-function generateApiUrl(storageObj)
+function generateApiUrl(options)
 {
     var ret = null;
 
-    if (storageObj.redmineUrl
-        && storageObj.redmineApiKey)
+    if (options
+        && options.url
+        && options.apiKey)
     {
-        ret = storageObj.redmineUrl + '/time_entries.json?key=' + storageObj.redmineApiKey + '&user_id=me&limit=100&spent_on=m';
+        ret = options.url + '/time_entries.json?key=' + options.apiKey + '&user_id=me&limit=100&spent_on=m';
     }
 
     return ret;
@@ -80,11 +81,15 @@ function handleData(data)
         sumOfMonth += item.hours;
     });
 
-    return {
+    var totals = {
         sumOfToday: sumOfToday,
         sumOfYesterday: sumOfYesterday,
         sumOfWeek: sumOfWeek,
         sumOfMonth: sumOfMonth,
+    };
+
+    return {
+        totals: totals,
         todayEntries: arrTodayEntries
     };
 }
@@ -96,13 +101,13 @@ function refreshContent()
 {
     chrome.storage.sync.get(null, function (storageObj) {
 
-        var apiUrl = generateApiUrl(storageObj);
-        if (!apiUrl) {
+        if (!storageObj.options) {
             return;
         }
 
-        fetch(apiUrl)
+        fetch(generateApiUrl(storageObj.options))
         .then(function(response) {
+            
             if (response.status !== 200) {
                 console.log('Looks like there was a problem. Status Code: ' + response.status);
                 return;
@@ -113,15 +118,10 @@ function refreshContent()
                 var handler = handleData(data);
 
                 // save data
-                chrome.storage.sync.set({ 
-                    sumOfToday      : handler.sumOfToday,
-                    sumOfYesterday  : handler.sumOfYesterday,
-                    sumOfWeek       : handler.sumOfWeek,
-                    sumOfMonth      : handler.sumOfMonth,
-                });
+                chrome.storage.sync.set({ totals: handler.totals });
 
                 // refresh badge
-                chrome.action.setBadgeText({ text: handler.sumOfToday.toString() });
+                chrome.action.setBadgeText({ text: handler.totals.sumOfToday.toString() });
             });
         })
         .catch(function(err) {

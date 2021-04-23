@@ -1,26 +1,4 @@
 // Güven Şahin - guvensahin.com
-function saveOptions()
-{
-    var redmineUrl      = document.getElementById('redmineUrl').value;
-    var redmineApiKey   = document.getElementById('redmineApiKey').value;
-    var workingHour     = document.getElementById('workingHour').value;
-
-    if (!redmineUrl
-        || !redmineApiKey)
-    {
-        updateSaveStatus('Please fill all required fields.');
-        return;
-    }
-
-    // save options
-    chrome.storage.sync.set({
-            redmineUrl: redmineUrl,
-            redmineApiKey: redmineApiKey,
-            workingHour: workingHour
-        }, function () {
-            updateSaveStatus('Options saved.', true);
-        });
-}
 
 function updateSaveStatus(message, isSuccess = false)
 {
@@ -39,25 +17,54 @@ function updateSaveStatus(message, isSuccess = false)
     }
 }
 
+
+function saveOptions()
+{
+    var redmineUrl      = document.getElementById('redmineUrl').value;
+    var redmineApiKey   = document.getElementById('redmineApiKey').value;
+    var workingHours    = document.getElementById('workingHours').value;
+
+    if (!redmineUrl
+        || !redmineApiKey)
+    {
+        updateSaveStatus('Please fill all required fields.');
+        return;
+    }
+
+    // save options
+    var options = {
+        url: redmineUrl,
+        apiKey: redmineApiKey,
+        workingHours: workingHours
+    };
+
+    chrome.storage.sync.set({ options: options },
+        function () {
+            updateSaveStatus('Options saved.', true);
+        });
+}
+
+
+
 function restoreOptions()
 {
-    chrome.storage.sync.get(null, function (storage) {
+    chrome.storage.sync.get(null, function (storageObj) {
 
-        if (storage)
+        if (storageObj.options)
         {
-            if (storage.redmineUrl)
+            if (storageObj.options.url)
             {
-                document.getElementById('redmineUrl').value = storage.redmineUrl;
+                document.getElementById('redmineUrl').value = storageObj.options.url;
             }
 
-            if (storage.redmineApiKey)
+            if (storageObj.options.apiKey)
             {
-                document.getElementById('redmineApiKey').value = storage.redmineApiKey;
+                document.getElementById('redmineApiKey').value = storageObj.options.apiKey;
             }
 
-            if (storage.workingHour)
+            if (storageObj.options.workingHours)
             {
-                document.getElementById('workingHour').value = storage.workingHour;
+                document.getElementById('workingHours').value = storageObj.options.workingHours;
             }
         }
     });
